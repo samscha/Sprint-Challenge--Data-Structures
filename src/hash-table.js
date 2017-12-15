@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable class-methods-use-this */
-const { LimitedArray, getIndexBelowMax } = require('./hash-table-helpers');
+const { LimitedArray, LinkedList, getIndexBelowMax } = require('./hash-table-helpers');
 
 class HashTable {
   constructor(limit = 8) {
@@ -15,8 +15,14 @@ class HashTable {
     this.storage = new LimitedArray(this.limit);
     oldStorage.each((bucket) => {
       if (!bucket) return;
-      bucket.forEach((pair) => {
-        this.insert(pair[0], pair[1]);
+      const bucketKeyVals = [];
+      let node = bucket.head;
+      while (node !== null) {
+        bucketKeyVals.push([node.key, node.value]);
+        node = node.next;
+      }
+      bucketKeyVals.forEach((keyValPair) => {
+        this.insert(keyValPair[0], keyValPair[1]);
       });
     });
   }
@@ -36,11 +42,14 @@ class HashTable {
   insert(key, value) {
     if (this.capacityIsFull()) this.resize();
     const index = getIndexBelowMax(key.toString(), this.limit);
-    let bucket = this.storage.get(index) || [];
+    let bucket = this.storage.get(index) || new LinkedList();
 
-    bucket = bucket.filter(item => item[0] !== key);
-    bucket.push([key, value]);
+    // console.log(`${key} + ${value}`);
+    bucket = bucket.filterBy(key, 'insert');
+    // console.log(bucket);
+    bucket.addToTail(key, value);
     this.storage.set(index, bucket);
+    // console.log(bucket);
   }
   // Removes the key, value pair from the hash table
   // Fetch the bucket associated with the given key using the getIndexBelowMax function
@@ -48,9 +57,8 @@ class HashTable {
   remove(key) {
     const index = getIndexBelowMax(key.toString(), this.limit);
     let bucket = this.storage.get(index);
-
     if (bucket) {
-      bucket = bucket.filter(item => item[0] !== key);
+      bucket = bucket.filterBy(key, 'remove');
       this.storage.set(index, bucket);
     }
   }
@@ -62,10 +70,9 @@ class HashTable {
     const bucket = this.storage.get(index);
     let retrieved;
     if (bucket) {
-      retrieved = bucket.filter(item => item[0] === key)[0];
+      retrieved = bucket.contains(key, true);
     }
-
-    return retrieved ? retrieved[1] : undefined;
+    return retrieved;
   }
 }
 

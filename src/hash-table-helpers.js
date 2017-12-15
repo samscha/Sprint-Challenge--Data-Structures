@@ -34,6 +34,76 @@ class LimitedArray {
     this.storage[index] = value;
   }
 }
+
+// LinkedList class for hash table buckets
+class LinkedList {
+  constructor() {
+    this.head = null;
+    this.tail = null;
+  }
+
+  addToTail(key, value) {
+    const newNode = {
+      next: null,
+      key,
+      value,
+    };
+    if (this.head === null) {
+      this.head = newNode;
+      this.tail = newNode;
+      return;
+    }
+    this.tail.next = newNode;
+    this.tail = newNode;
+  }
+
+  removeHead() {
+    if (this.head === null) return;
+    if (this.head.next === null) {
+      const head = this.head;
+      this.head = null;
+      this.tail = null;
+      return head.value;
+    }
+    const head = this.head;
+    this.head = this.head.next;
+    return head.value;
+  }
+
+  contains(key, passValue = false) {
+    if (this.head === null) return false;
+    const searchLinkedList = (node) => {
+      if (node.key === key) if (passValue) return node.value || true;
+      if (node.next === null) if (passValue) return undefined || false;
+      return searchLinkedList(node.next);
+    };
+    return searchLinkedList(this.head);
+  }
+
+  filterBy(key, action) {
+    if (this.head === null) return this;
+    if (this.head === this.tail) {
+      if (this.head.key === key) {
+        if (action === 'remove') return undefined;
+        if (action === 'insert') {
+          this.head = null;
+          this.tail = null;
+          return this;
+        } // else throw an error
+      }
+      return this;
+    }
+    let node = this.head;
+    do {
+      if (node.next.key === key) {
+        node.next = node.next.next;
+      }
+      node = node.next;
+    } while (node.next.next !== null);
+    return this;
+  }
+}
+
 /* eslint-disable no-bitwise, operator-assignment */
 // This is hash function you'll be using to hash keys
 // There's some bit-shifting magic going on here, but essentially, all it is doing is performing the modulo operator
@@ -51,5 +121,6 @@ const getIndexBelowMax = (str, max) => {
 
 module.exports = {
   LimitedArray,
+  LinkedList,
   getIndexBelowMax,
 };

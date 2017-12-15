@@ -44,12 +44,9 @@ class HashTable {
     const index = getIndexBelowMax(key.toString(), this.limit);
     let bucket = this.storage.get(index) || new LinkedList();
 
-    // console.log(`${key} + ${value}`);
     bucket = bucket.filterBy(key, 'insert');
-    // console.log(bucket);
     bucket.addToTail(key, value);
     this.storage.set(index, bucket);
-    // console.log(bucket);
   }
   // Removes the key, value pair from the hash table
   // Fetch the bucket associated with the given key using the getIndexBelowMax function
